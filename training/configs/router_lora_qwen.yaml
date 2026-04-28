@@ -1,0 +1,33 @@
+task_name: router
+base_model: Qwen/Qwen2.5-3B-Instruct
+train_file: data/sft_router/train.jsonl
+val_file: data/sft_router/val.jsonl
+output_dir: outputs/router-lora-v1
+max_seq_length: 2048
+num_train_epochs: 3
+learning_rate: 1.0e-4
+warmup_ratio: 0.03
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8
+gradient_checkpointing: true
+bf16: true
+eval_steps: 100
+save_steps: 200
+logging_steps: 20
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_compute_dtype: bfloat16
+  bnb_4bit_use_double_quant: true

@@ -1,0 +1,318 @@
+version: v0.2
+description: Deterministic taxonomy for AI platform enterprise support tickets.
+intents:
+  api_quota_error:
+    product: model_api
+    default_team: platform_support
+    secondary_team: billing_system
+    default_priority: P2
+    risk_level: medium
+    required_tools: [check_api_status, query_order_status, get_sla_policy]
+    missing_info: [account_id, order_id]
+    needs_rag: true
+    requires_human: true
+    expected_citations: [api_error_codes, billing_recharge_sync, billing_quota_policy]
+    expected_status: WAITING_HUMAN_APPROVAL
+    text_templates:
+      - "模型 API 返回 429，控制台提示 quota exceeded，昨天充值后还是无法调用，request_id: {request_id}。"
+      - "您好，我们这边接口一直报 429 quota_exceeded，已经付费充值了，请帮忙查一下，账号 {account_id}。"
+      - "刚充完值还是 429，是不是额度没同步？订单 {order_id}，请求 {request_id}。"
+      - "API 又不通了，好像是额度问题，但财务说已经付款，麻烦看下。"
+      - "客户生产环境调用大模型失败，提示 quota exceeded，同时怀疑 QPS 也被限了，request_id: {request_id}。"
+      - "充值成功但额度没恢复，429 一直出现，能否直接帮我们恢复 quota？"
+      - "昨天升级套餐后，部分请求返回 429，控制台显示余额不足，账号 {account_id}，但订单号暂时找不到。"
+      - "接口返回英文 quota exceeded，我不确定是余额、套餐还是限流，麻烦按工单处理。"
+  api_rate_limit_error:
+    product: model_api
+    default_team: platform_support
+    secondary_team: ""
+    default_priority: P2
+    risk_level: low
+    required_tools: [check_api_status, get_customer_profile, get_sla_policy]
+    missing_info: [request_id, account_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [api_rate_limit, api_error_codes]
+    expected_status: RESOLVED
+    text_templates:
+      - "模型 API 返回 429 rate_limited，流量高峰时大量失败，request_id: {request_id}。"
+      - "我们没有欠费，但接口说 429，怀疑是 QPS 限制，账号 {account_id}。"
+      - "并发一上去就报错，是不是套餐限流？"
+      - "客户压测时 429 很多，想知道当前 QPS 和重试策略。"
+      - "同一个接口有时成功有时报 429，控制台没有 quota 提示。"
+      - "业务上线后请求量变大，模型 API 被限速，想临时提高限制。"
+      - "429 和 quota exceeded 混在一起出现，先帮忙确认是不是 rate limit，request_id: {request_id}。"
+      - "我们想知道标准版账号的 TPM、QPS 和并发限制。"
+  api_auth_error:
+    product: model_api
+    default_team: platform_support
+    secondary_team: security_ops
+    default_priority: P2
+    risk_level: low
+    required_tools: [get_sla_policy]
+    missing_info: [request_id, project_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [api_error_codes, security_sensitive_data]
+    expected_status: WAITING_CUSTOMER
+    text_templates:
+      - "API key 调用返回 401 authentication failed，request_id: {request_id}。"
+      - "我们的 key 昨天还能用，今天突然认证失败，项目 {project_id}。"
+      - "接口提示 invalid api key，但我不确定是不是项目权限问题。"
+      - "客户说鉴权失败，想直接把密钥发给你们帮查。"
+      - "401 和 permission denied 交替出现，麻烦看下是不是账号被禁用。"
+      - "换了新 key 后仍然认证失败，控制台没有明显报错。"
+      - "调用 embedding 接口时提示 authentication failed，项目 ID 暂时找不到。"
+      - "我们怀疑是 API key 过期或项目绑定错了，需要排查。"
+  permission_issue:
+    product: console
+    default_team: security_ops
+    secondary_team: platform_support
+    default_priority: P2
+    risk_level: high
+    required_tools: [get_customer_profile, get_sla_policy]
+    missing_info: [account_id, project_id]
+    needs_rag: true
+    requires_human: true
+    expected_citations: [security_sensitive_data, sop_escalation_policy]
+    expected_status: WAITING_HUMAN_APPROVAL
+    text_templates:
+      - "企业子账号无法访问项目控制台，提示 permission denied，账号 {account_id}。"
+      - "我们给同事开了权限，但他看不到知识库和部署页面。"
+      - "管理员权限好像异常，项目 {project_id} 下成员列表打不开。"
+      - "客户要求直接帮他提升为 owner，比较着急。"
+      - "多个角色权限混乱，部分人能看订单，部分人看不到 API 日志。"
+      - "控制台审计日志里没有授权记录，但用户说昨天还能访问。"
+      - "请确认账号是不是被错误降权，涉及生产项目权限。"
+      - "我们怀疑权限策略同步失败，需要安全组一起看。"
+  quota_billing:
+    product: billing
+    default_team: billing_system
+    secondary_team: platform_support
+    default_priority: P2
+    risk_level: high
+    required_tools: [query_order_status, get_customer_profile, get_sla_policy]
+    missing_info: [account_id, order_id]
+    needs_rag: true
+    requires_human: true
+    expected_citations: [billing_recharge_sync, billing_quota_policy]
+    expected_status: WAITING_HUMAN_APPROVAL
+    text_templates:
+      - "订单 {order_id} 已支付，但控制台额度没有增加，账号 {account_id}。"
+      - "充值金额扣了，发票和额度都没更新。"
+      - "客户要求立即补发额度，并希望解释为什么付款后没到账。"
+      - "财务说订单成功，但我们 API 还是显示余额不足。"
+      - "套餐升级后额度不对，怀疑绑定到其他账号。"
+      - "能否直接修改 quota？客户正在生产发布。"
+      - "付款状态、额度同步和发票状态三个都对不上，麻烦查。"
+      - "订单号找不到，但客户说企业付款已经完成，需要先排查。"
+  rag_import_error:
+    product: knowledge_base
+    default_team: knowledge_platform
+    secondary_team: platform_support
+    default_priority: P3
+    risk_level: low
+    required_tools: [get_sla_policy]
+    missing_info: [project_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [rag_retrieval_quality]
+    expected_status: WAITING_CUSTOMER
+    text_templates:
+      - "知识库导入 PDF 失败，页面一直显示 parsing，项目 {project_id}。"
+      - "上传文档后没有生成 chunk，怀疑解析服务异常。"
+      - "客户导入 Markdown 成功但检索不到，embedding 状态未知。"
+      - "批量导入文档有一半失败，没有明确错误码。"
+      - "新知识库同步很慢，文档一直 pending。"
+      - "导入 Word 文件后出现乱码，召回结果也不对。"
+      - "知识库导入和模型 API 429 同时出现，先帮忙判断是不是平台故障。"
+      - "用户说点了导入没反应，想知道需要提供哪些日志。"
+  rag_quality_issue:
+    product: knowledge_base
+    default_team: knowledge_platform
+    secondary_team: platform_support
+    default_priority: P3
+    risk_level: low
+    required_tools: [get_sla_policy]
+    missing_info: [project_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [rag_retrieval_quality]
+    expected_status: RESOLVED
+    text_templates:
+      - "知识库能导入，但问答经常召回旧文档，项目 {project_id}。"
+      - "RAG 检索质量很差，关键词能搜到，语义检索搜不到。"
+      - "新上传文档没有被召回，怀疑 embedding 没更新。"
+      - "同一个问题每次引用不同，答案不稳定。"
+      - "metadata filter 开启后几乎没有结果。"
+      - "客户说 chunk 太碎，回答缺上下文。"
+      - "检索质量和延迟都变差，可能和文档解析有关。"
+      - "知识库导入成功但问答答非所问，请给排查步骤。"
+  model_latency:
+    product: model_api
+    default_team: platform_support
+    secondary_team: model_serving
+    default_priority: P2
+    risk_level: medium
+    required_tools: [check_api_status, get_sla_policy]
+    missing_info: [request_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [api_request_id_troubleshooting, sop_escalation_policy]
+    expected_status: RESOLVED
+    text_templates:
+      - "模型 API 延迟突然升高，request_id: {request_id}。"
+      - "同样的 prompt 昨天 2 秒，今天 20 秒。"
+      - "客户生产链路超时，怀疑模型服务节点异常。"
+      - "延迟高同时偶发 503，想确认是不是平台事故。"
+      - "embedding 接口 p95 延迟异常，没有错误码。"
+      - "请求慢但最终成功，想知道是否计入 SLA。"
+      - "高峰期模型响应特别慢，是否能切换区域？"
+      - "接口成功率正常但 latency_ms 很高，请帮忙看日志。"
+  deployment_failure:
+    product: model_deployment
+    default_team: model_serving
+    secondary_team: platform_support
+    default_priority: P2
+    risk_level: medium
+    required_tools: [get_deployment_status, get_sla_policy]
+    missing_info: [deployment_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [deployment_gpu_memory, sop_escalation_policy]
+    expected_status: RESOLVED
+    text_templates:
+      - "模型部署 {deployment_id} 一直失败，容器启动后退出。"
+      - "部署任务卡在 pending，控制台没有详细错误。"
+      - "模型服务发布失败，日志显示镜像拉取异常。"
+      - "客户升级模型后部署不可用，需要回滚建议。"
+      - "部署失败和 GPU 显存报错都有出现，先帮忙判断原因。"
+      - "容器启动失败，但健康检查日志为空。"
+      - "部署 ID 找不到，但客户说生产服务已经中断。"
+      - "模型版本切换后 endpoint 访问失败，需要排查。"
+  gpu_memory_error:
+    product: model_deployment
+    default_team: model_serving
+    secondary_team: platform_support
+    default_priority: P2
+    risk_level: medium
+    required_tools: [get_deployment_status, get_sla_policy]
+    missing_info: [deployment_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [deployment_gpu_memory]
+    expected_status: RESOLVED
+    text_templates:
+      - "部署 {deployment_id} 报 CUDA out of memory。"
+      - "7B 模型在 24GB GPU 上启动失败，怀疑 KV cache 太大。"
+      - "显存不足导致容器重启，想知道该调哪些参数。"
+      - "开启长上下文后部署 OOM，但小模型正常。"
+      - "客户想直接换更大 GPU，也想知道是否能量化解决。"
+      - "GPU memory exceeded 和 batch size 有关系吗？"
+      - "部署失败日志只有 out of memory，无法判断是模型还是配置。"
+      - "模型服务显存占用持续上涨，最后 OOM。"
+  security_privacy:
+    product: security
+    default_team: security_ops
+    secondary_team: platform_support
+    default_priority: P1
+    risk_level: high
+    required_tools: [get_customer_profile, get_sla_policy]
+    missing_info: [account_id, project_id]
+    needs_rag: true
+    requires_human: true
+    expected_citations: [security_sensitive_data, sop_escalation_policy]
+    expected_status: WAITING_HUMAN_APPROVAL
+    text_templates:
+      - "客户怀疑 API 日志泄露了敏感数据，账号 {account_id}。"
+      - "请帮忙导出某个用户的全部 prompt 和响应内容。"
+      - "安全审计发现异常访问，需要查看项目 {project_id} 的审计日志。"
+      - "我们误上传了包含隐私的文档，希望立即删除所有副本。"
+      - "客户要求确认模型是否训练了他们的数据。"
+      - "有员工离职，需要冻结其访问权限并查看历史操作。"
+      - "安全问题和权限问题混在一起，比较紧急。"
+      - "能否把某账号的风险评分发给客户？"
+  account_issue:
+    product: account
+    default_team: customer_service
+    secondary_team: platform_support
+    default_priority: P3
+    risk_level: medium
+    required_tools: [get_customer_profile, get_sla_policy]
+    missing_info: [account_id]
+    needs_rag: true
+    requires_human: true
+    expected_citations: [security_sensitive_data, sop_customer_reply_policy]
+    expected_status: WAITING_HUMAN_APPROVAL
+    text_templates:
+      - "账号 {account_id} 登录后看不到企业空间。"
+      - "客户账号疑似被冻结，控制台提示 contact support。"
+      - "企业主账号绑定错了手机号，需要更换。"
+      - "账号状态异常，同时 API 调用也失败。"
+      - "用户想合并两个企业账号的数据。"
+      - "客户要求修改账号实名信息，比较急。"
+      - "登录、权限和计费信息都不对，请帮忙定位。"
+      - "账号 ID 暂时没有，只有客户公司名称。"
+  feature_request:
+    product: platform
+    default_team: product_feedback
+    secondary_team: ""
+    default_priority: P3
+    risk_level: low
+    required_tools: [get_sla_policy]
+    missing_info: []
+    needs_rag: true
+    requires_human: false
+    expected_citations: [sop_customer_reply_policy]
+    expected_status: RESOLVED
+    text_templates:
+      - "希望控制台支持批量导出工单和 API 请求日志。"
+      - "能不能增加更细的模型用量报表？"
+      - "客户希望 RAG 支持自定义 reranker。"
+      - "建议支持按部门拆分额度。"
+      - "我们想要私有化部署审批流的功能。"
+      - "是否可以提供更长上下文模型的灰度申请？"
+      - "这个不是故障，是产品建议，请帮忙记录。"
+      - "客户问 roadmap 里有没有多 LoRA adapter 管理。"
+  incident_outage:
+    product: platform
+    default_team: incident_commander
+    secondary_team: platform_support
+    default_priority: P1
+    risk_level: high
+    required_tools: [get_sla_policy]
+    missing_info: [request_id]
+    needs_rag: true
+    requires_human: true
+    expected_citations: [sop_escalation_policy, api_error_codes]
+    expected_status: ESCALATED
+    text_templates:
+      - "大量客户反馈 API 503，疑似平台事故，request_id: {request_id}。"
+      - "多个区域模型服务不可用，请立即升级。"
+      - "生产环境全量调用失败，影响核心业务。"
+      - "控制台、API 和知识库同时异常，怀疑全局故障。"
+      - "客户要求事故说明和 ETA，当前没有明确原因。"
+      - "错误率突然升高，多个账号同时出现。"
+      - "这可能是 P1/P0，先不要普通回复，走事故流程。"
+      - "API 失败、延迟高、部署也失败，麻烦按 incident 处理。"
+  ambiguous_missing_info:
+    product: unknown
+    default_team: support_queue
+    secondary_team: ""
+    default_priority: P3
+    risk_level: low
+    required_tools: [get_sla_policy]
+    missing_info: [request_id, account_id]
+    needs_rag: true
+    requires_human: false
+    expected_citations: [sop_customer_reply_policy]
+    expected_status: WAITING_CUSTOMER
+    text_templates:
+      - "不好用了，麻烦看一下。"
+      - "接口、知识库还是控制台我也不确定，客户只说失败。"
+      - "昨天能用今天不能用，没有错误截图。"
+      - "客户说系统慢，还说额度不对，但没有账号信息。"
+      - "有个问题比较急，先帮忙查，具体错误我稍后补。"
+      - "API 和部署好像都有点问题，不知道从哪里开始。"
+      - "控制台报错了，但是刷新后没了。"
+      - "用户只给了一句无法调用，没有 request_id。"

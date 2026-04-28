@@ -1,0 +1,3 @@
+{"query":"429 quota exceeded 充值后仍然无法调用","expected_doc_ids":["api_error_codes","billing_recharge_sync","billing_quota_policy"]}
+{"query":"GPU out of memory 部署失败","expected_doc_ids":["deployment_gpu_memory"]}
+{"query":"知识库导入后检索不到新文档 embedding","expected_doc_ids":["rag_retrieval_quality"]}

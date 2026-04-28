@@ -1,0 +1,2 @@
+{"citation_error_detection_accuracy": 1.0, "false_approval_rate": 0.07, "json_valid_rate": 1.0, "mode": "prompt", "requires_approval_accuracy": 0.61, "risk_detection_recall": 0.9091, "rows": 100, "support_accuracy": 0.41, "test_file": "data/sft_verifier/test.jsonl", "unsupported_claim_recall": 0.7783}
+{"citation_error_detection_accuracy": 0.96, "false_approval_rate": 0.0, "json_valid_rate": 1.0, "mode": "lora", "requires_approval_accuracy": 0.99, "risk_detection_recall": 0.987, "rows": 100, "support_accuracy": 0.99, "unsupported_claim_recall": 0.97}

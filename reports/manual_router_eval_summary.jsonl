@@ -1,0 +1,1 @@
+{"intent_accuracy": 0.8, "json_valid_rate": 1.0, "missing_info_f1": 0.9267, "missing_info_precision": 0.93, "missing_info_recall": 0.93, "mode": "rule", "priority_accuracy": 0.92, "required_tools_accuracy": 0.88, "requires_human_accuracy": 0.92, "routing_accuracy": 0.86, "rows": 50, "test_file": "data/eval/manual_holdout_router.jsonl"}

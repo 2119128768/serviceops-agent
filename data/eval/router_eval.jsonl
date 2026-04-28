@@ -1,0 +1,3 @@
+{"ticket":"模型 API 返回 429，提示 quota exceeded，昨天已充值。request_id: req_20260427_001","intent":"api_quota_error","priority":"P2","suggested_team":"platform_support","missing_info":["account_id","order_id"],"required_tools":["check_api_status","query_order_status","get_sla_policy"],"requires_human":true}
+{"ticket":"API key 调用返回 401 authentication failed","intent":"api_auth_error","priority":"P2","suggested_team":"platform_support","missing_info":["request_id","project_id"],"required_tools":["get_sla_policy"],"requires_human":false}
+{"ticket":"部署 dep_gpu_001 失败，GPU out of memory","intent":"deployment_failure","priority":"P2","suggested_team":"model_serving","missing_info":[],"required_tools":["get_deployment_status","get_sla_policy"],"requires_human":false}

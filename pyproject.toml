@@ -1,0 +1,52 @@
+[project]
+name = "serviceops-agent"
+version = "0.1.0"
+description = "Enterprise ServiceOps Agent with Agentic RAG, tool calling, approval flow, tracing, and LoRA training scaffolds."
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.27.0",
+  "sqlalchemy>=2.0.25",
+  "pydantic>=2.6.0",
+  "psycopg[binary]>=3.1.18",
+  "python-dotenv>=1.0.0",
+  "pyyaml>=6.0.1",
+  "httpx>=0.26.0",
+]
+
+[project.optional-dependencies]
+training = [
+  "accelerate==1.1.1",
+  "bitsandbytes==0.45.0; platform_system != 'Darwin'",
+  "datasets==2.21.0",
+  "huggingface-hub>=0.24.0",
+  "peft==0.13.2",
+  "protobuf>=4.25.0",
+  "safetensors>=0.4.3",
+  "sentencepiece>=0.2.0",
+  "torch==2.5.1",
+  "transformers==4.46.3",
+  "trl==0.12.2",
+]
+rag = [
+  "sentence-transformers>=2.7.0",
+]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.3.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+exclude = ["data*", "frontend*", "reports*", "serving*", "tests*", "training*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

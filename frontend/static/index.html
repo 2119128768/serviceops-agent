@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ServiceOps Agent Console</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f9;
+        --surface: #ffffff;
+        --ink: #172026;
+        --muted: #68727d;
+        --line: #dce2e8;
+        --blue: #155eef;
+        --teal: #08756f;
+        --amber: #a15c07;
+        --red: #b42318;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      header {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
+      }
+      header strong {
+        font-size: 16px;
+      }
+      header span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      main {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 16px;
+        padding: 16px;
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+      section,
+      aside {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      aside {
+        padding: 14px;
+        height: calc(100vh - 88px);
+        overflow: auto;
+      }
+      section {
+        min-height: calc(100vh - 88px);
+        overflow: hidden;
+      }
+      .section-head {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .content {
+        padding: 16px;
+        display: grid;
+        gap: 16px;
+      }
+      label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px 11px;
+        font: inherit;
+        background: #fff;
+      }
+      textarea {
+        min-height: 172px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 6px;
+        padding: 9px 12px;
+        color: #fff;
+        background: var(--blue);
+        font-weight: 650;
+        cursor: pointer;
+      }
+      button.secondary {
+        color: var(--ink);
+        background: #eef2f6;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .metric,
+      .panel,
+      .ticket {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .metric {
+        padding: 12px;
+      }
+      .metric small,
+      .ticket small {
+        color: var(--muted);
+      }
+      .metric strong {
+        display: block;
+        font-size: 22px;
+        margin-top: 4px;
+      }
+      .panel h3 {
+        margin: 0;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .panel-body {
+        padding: 12px 14px;
+      }
+      .ticket {
+        padding: 10px;
+        cursor: pointer;
+      }
+      .ticket:hover {
+        border-color: var(--blue);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        border-radius: 999px;
+        padding: 2px 8px;
+        background: #eef2f6;
+        color: #354250;
+        font-size: 12px;
+        font-weight: 650;
+      }
+      .badge.p2,
+      .badge.pending {
+        background: #fff4df;
+        color: var(--amber);
+      }
+      .badge.waiting {
+        background: #e6f6f4;
+        color: var(--teal);
+      }
+      .badge.high {
+        background: #ffebe9;
+        color: var(--red);
+      }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #26313b;
+      }
+      .trace {
+        display: grid;
+        gap: 8px;
+      }
+      .trace-item {
+        border-left: 3px solid var(--blue);
+        padding: 6px 0 6px 10px;
+      }
+      .trace-item strong {
+        display: block;
+        font-size: 13px;
+      }
+      .trace-item small {
+        color: var(--muted);
+      }
+      @media (max-width: 960px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        aside,
+        section {
+          height: auto;
+          min-height: auto;
+        }
+        .metric-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>ServiceOps Agent</strong>
+      <span>Agentic RAG · Tool Calling · Approval · Trace</span>
+    </header>
+    <main>
+      <aside>
+        <div class="stack">
+          <div>
+            <label for="subject">工单标题</label>
+            <input id="subject" value="模型 API 返回 429，充值后仍无法调用" />
+          </div>
+          <div>
+            <label for="body">工单内容</label>
+            <textarea id="body">我们调用模型 API 时一直返回 429，控制台显示 quota exceeded。
+但昨天已经充值了，为什么还是不能调用？
+request_id: req_20260427_001</textarea>
+          </div>
+          <div class="row">
+            <button id="createRun">创建并运行 Agent</button>
+            <button class="secondary" id="refresh">刷新</button>
+          </div>
+          <div class="panel">
+            <h3>工单列表</h3>
+            <div class="panel-body stack" id="tickets"></div>
+          </div>
+        </div>
+      </aside>
+      <section>
+        <div class="section-head">
+          <strong id="activeTitle">运行结果</strong>
+          <div class="row">
+            <span class="badge" id="activeStatus">idle</span>
+            <span class="badge" id="activePriority">-</span>
+          </div>
+        </div>
+        <div class="content">
+          <div class="metric-grid">
+            <div class="metric"><small>Tickets</small><strong id="mTickets">0</strong></div>
+            <div class="metric"><small>Tool Calls</small><strong id="mTools">0</strong></div>
+            <div class="metric"><small>Approvals</small><strong id="mApprovals">0</strong></div>
+            <div class="metric"><small>Avg Tool Latency</small><strong id="mLatency">0ms</strong></div>
+          </div>
+          <div class="panel">
+            <h3>Agent Output</h3>
+            <div class="panel-body"><pre id="result">等待运行。</pre></div>
+          </div>
+          <div class="panel">
+            <h3>Trace</h3>
+            <div class="panel-body trace" id="trace"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      const api = async (url, options = {}) => {
+        const res = await fetch(url, {
+          headers: { "Content-Type": "application/json" },
+          ...options,
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      };
+
+      const renderJson = (value) => JSON.stringify(value, null, 2);
+
+      async function refreshMetrics() {
+        const m = await api("/metrics/summary");
+        document.querySelector("#mTickets").textContent = m.ticket_count;
+        document.querySelector("#mTools").textContent = m.tool_call_count;
+        document.querySelector("#mApprovals").textContent = m.approval_count;
+        document.querySelector("#mLatency").textContent = `${m.avg_tool_latency_ms}ms`;
+      }
+
+      async function refreshTickets() {
+        const tickets = await api("/tickets");
+        const box = document.querySelector("#tickets");
+        box.innerHTML = "";
+        tickets.forEach((ticket) => {
+          const item = document.createElement("div");
+          item.className = "ticket";
+          item.innerHTML = `<strong>${ticket.subject}</strong><br /><small>${ticket.ticket_id} · ${ticket.status} · ${ticket.intent || "unclassified"}</small>`;
+          item.onclick = () => loadTicket(ticket.ticket_id);
+          box.appendChild(item);
+        });
+      }
+
+      async function loadTicket(ticketId) {
+        const ticket = await api(`/tickets/${ticketId}`);
+        const trace = await api(`/tickets/${ticketId}/trace`);
+        document.querySelector("#activeTitle").textContent = `${ticket.ticket_id} · ${ticket.subject}`;
+        document.querySelector("#activeStatus").textContent = ticket.status;
+        document.querySelector("#activeStatus").className = `badge ${ticket.status.toLowerCase().includes("waiting") ? "waiting" : ""}`;
+        document.querySelector("#activePriority").textContent = ticket.priority || "-";
+        document.querySelector("#activePriority").className = `badge ${(ticket.priority || "").toLowerCase()}`;
+        document.querySelector("#result").textContent = renderJson(ticket.final_summary || ticket);
+        const traceBox = document.querySelector("#trace");
+        traceBox.innerHTML = "";
+        trace.events.forEach((event) => {
+          const row = document.createElement("div");
+          row.className = "trace-item";
+          row.innerHTML = `<strong>${event.event_type}</strong><small>${event.created_at}</small><pre>${renderJson(event.payload)}</pre>`;
+          traceBox.appendChild(row);
+        });
+      }
+
+      async function createAndRun() {
+        const button = document.querySelector("#createRun");
+        button.disabled = true;
+        try {
+          const ticket = await api("/tickets/create", {
+            method: "POST",
+            body: JSON.stringify({
+              subject: document.querySelector("#subject").value,
+              body: document.querySelector("#body").value,
+            }),
+          });
+          const run = await api(`/tickets/${ticket.ticket_id}/run-agent`, { method: "POST" });
+          await refreshTickets();
+          await refreshMetrics();
+          await loadTicket(run.ticket.ticket_id);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      document.querySelector("#createRun").onclick = createAndRun;
+      document.querySelector("#refresh").onclick = async () => {
+        await refreshTickets();
+        await refreshMetrics();
+      };
+      refreshTickets();
+      refreshMetrics();
+    </script>
+  </body>
+</html>
